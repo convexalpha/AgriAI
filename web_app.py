@@ -58,6 +58,17 @@ def crop_price_prediction(input_list):
     encoded_input = ohe.transform(input_array)
 
     return prediction
+
+def yield_prediction(input_list_yield):
+    ohe = {}
+    pickle_file = open("ohe_yield_prediction.pkl","rb")
+    ohe = pickle.load(pickle_file)
+    model = load_model('yield_prediction.h5')
+    input_array =  np.array(input_list_yield).reshape(-1, 7)
+    encoded_input = ohe.transform(input_array)
+
+    return prediction
+
 #@st.cache(allow_output_mutation=True)
 
 def main():
