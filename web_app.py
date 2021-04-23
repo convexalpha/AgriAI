@@ -56,6 +56,7 @@ def crop_price_prediction(input_list):
     model = load_model('crop_price_prediction.h5')
     input_array =  np.array(input_list).reshape(-1,5)
     encoded_input = ohe.transform(input_array)
+    prediction = model.predict(encoded_input)
 
     return prediction
 
@@ -66,6 +67,7 @@ def yield_prediction(input_list_yield):
     model = load_model('yield_prediction.h5')
     input_array =  np.array(input_list_yield).reshape(-1, 7)
     encoded_input = ohe.transform(input_array)
+    prediction = model.predict(encoded_input)
 
     return prediction
 
@@ -82,19 +84,45 @@ def main():
     """
     st.markdown(html_temp, unsafe_allow_html=True)
 
-    selection = st.radio("Select Use", ['Crop Disease Detection', 'Weed Detection', 'Yield Prediction', 'Crop Recommendation', 'Price Recommendation','Crop Health'])
+    selection = st.radio("Select Use", ['Crop Disease Detection', 'Weed Detection', 'Yield Prediction', 'Crop Price Recommendation', 'Price Recommendation','Crop Health'])
     st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
     if selection == 'Crop Health':
         st.sidebar.markdown('<p>Graphs are auto-updated on each change.</p>', unsafe_allow_html=True)
-        Estimated_Insects_Count = st.sidebar.text_input("Estimated_Insects_Count","Type Here")
-        Crop_Type = st.sidebar.text_input("Crop_Type","Type Here")
-        Soil_Type = st.sidebar.text_input("Soil_Type","Type Here")
-        Pesticide_Use_Category = st.sidebar.text_input("Pesticide_Use_Category","Type Here")
-        Number_Doses_Week = st.sidebar.text_input("Number_Doses_Week","Type Here")
-        Number_Weeks_Used = st.sidebar.text_input("Number_Weeks_Used","Type Here")
-        Number_Weeks_Quit = st.sidebar.text_input("Number_Weeks_Quit","Type Here")
-        Season = st.sidebar.text_input("Season","Type Here")
+        Estimated_Insects_Count = st.sidebar.text_input("Estimated Insects Count per square meter","Type Here")
+        Crop_Type = st.sidebar.selectbox("Select your crop type",("Food Crop", "Cash Crop"))
+        Soil_Type = st.sidebar.text_input("Select your soil type",("Dry", "Wet"))
+        Pesticide_Use_Category = st.sidebar.selectbox("Pesticide Use Category",("Never", "Previously Used", "Currently Using"))
+        Number_Doses_Week = st.sidebar.text_input("Number Doses per Week","Type Here")
+        Number_Weeks_Used = st.sidebar.text_input("Number of Weeks Used","Type Here")
+        Number_Weeks_Quit = st.sidebar.text_input("Number of Weeks Quit","Type Here")
+        Season = st.sidebar.selectbox("Season",("Kharif", "Rabi", "Zaid"))
+
+        if Crop_Type == 'Food Crop':
+            Crop_Type = 0
+        else :
+            Crop_Type = 1
+
+        if Soil_Type == 'Dry':
+            Soil_Type = 0
+        else :
+            Soil_Type = 1
+
+        if Pesticide_Use_Category == "Never":
+            Pesticide_Use_Category = 1 
+        elif Pesticide_Use_Category == "Previously Used":
+            Pesticide_Use_Category = 2
+        else :
+            Pesticide_Use_Category = 3
+
+        if Season == "Kharif":
+            Season = 1 
+        elif Season == "Rabi":
+            Season = 2
+        else :
+            Season = 3
+
+        
 
         result=""
         if st.button("Predict"):
@@ -102,9 +130,9 @@ def main():
         if result==0:
             result = 'Alive'
         elif result==1:
-            result = 'Damaged'
+            result = 'Possible Damage due to other causes'
         elif result==2:
-            result = 'Damaged due to Pesticides'
+            result = 'Damage due to Pesticides'
 
         st.success('The crop is {}'.format(result))
 
@@ -156,10 +184,10 @@ def main():
             st.success(f"{prediction.item().title()} are recommended by the A.I for your farm.")
 
 
-    if selection == 'Crop Price Prediction':
-        st.sidebar.markdown('<p>Graphs are auto-updated on each change.</p>', unsafe_allow_html=True)
+    elif selection == 'Crop Price Recommendation':
+        # st.sidebar.markdown('<p>Graphs are auto-updated on each change.</p>', unsafe_allow_html=True)
         list1 = []
-        state_selection = st.selectbox("Select Your State",('Andaman and Nicobar', 'Andhra Pradesh', 'Assam', 'Chattisgarh',
+        state_selection = st.sidebar.selectbox("Select Your State",('Andaman and Nicobar', 'Andhra Pradesh', 'Assam', 'Chattisgarh',
        'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh',
        'Jammu and Kashmir', 'Karnataka', 'Kerala', 'Madhya Pradesh',
        'Maharashtra', 'Manipur', 'Meghalaya', 'Nagaland', 'Odisha',
@@ -377,6 +405,217 @@ def main():
 
 
         st.success('The suggested crop price (per quintal) is {}'.format(result))
+
+
+    elif selection == 'Yield Prediction':
+        state_selection = st.sidebar.selectbox("Select your state", ('Andaman and Nicobar Islands', 'Andhra Pradesh',
+       'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh',
+       'Chhattisgarh', 'Dadra and Nagar Haveli', 'Goa', 'Gujarat',
+       'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir ', 'Jharkhand',
+       'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+       'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Puducherry',
+       'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana ',
+       'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'))
+
+        district_selection = st.sidebar.selectbox("Select your district", ('NICOBARS', 'NORTH AND MIDDLE ANDAMAN', 'SOUTH ANDAMANS',
+       'ANANTAPUR', 'CHITTOOR', 'EAST GODAVARI', 'GUNTUR', 'KADAPA',
+       'KRISHNA', 'KURNOOL', 'PRAKASAM', 'SPSR NELLORE', 'SRIKAKULAM',
+       'VISAKHAPATANAM', 'VIZIANAGARAM', 'WEST GODAVARI', 'ANJAW',
+       'CHANGLANG', 'DIBANG VALLEY', 'EAST KAMENG', 'EAST SIANG',
+       'KURUNG KUMEY', 'LOHIT', 'LONGDING', 'LOWER DIBANG VALLEY',
+       'LOWER SUBANSIRI', 'NAMSAI', 'PAPUM PARE', 'TAWANG', 'TIRAP',
+       'UPPER SIANG', 'UPPER SUBANSIRI', 'WEST KAMENG', 'WEST SIANG',
+       'BAKSA', 'BARPETA', 'BONGAIGAON', 'CACHAR', 'CHIRANG', 'DARRANG',
+       'DHEMAJI', 'DHUBRI', 'DIBRUGARH', 'DIMA HASAO', 'GOALPARA',
+       'GOLAGHAT', 'HAILAKANDI', 'JORHAT', 'KAMRUP', 'KAMRUP METRO',
+       'KARBI ANGLONG', 'KARIMGANJ', 'KOKRAJHAR', 'LAKHIMPUR', 'MARIGAON',
+       'NAGAON', 'NALBARI', 'SIVASAGAR', 'SONITPUR', 'TINSUKIA',
+       'UDALGURI', 'ARARIA', 'ARWAL', 'AURANGABAD', 'BANKA', 'BEGUSARAI',
+       'BHAGALPUR', 'BHOJPUR', 'BUXAR', 'DARBHANGA', 'GAYA', 'GOPALGANJ',
+       'JAMUI', 'JEHANABAD', 'KAIMUR (BHABUA)', 'KATIHAR', 'KHAGARIA',
+       'KISHANGANJ', 'LAKHISARAI', 'MADHEPURA', 'MADHUBANI', 'MUNGER',
+       'MUZAFFARPUR', 'NALANDA', 'NAWADA', 'PASHCHIM CHAMPARAN', 'PATNA',
+       'PURBI CHAMPARAN', 'PURNIA', 'ROHTAS', 'SAHARSA', 'SAMASTIPUR',
+       'SARAN', 'SHEIKHPURA', 'SHEOHAR', 'SITAMARHI', 'SIWAN', 'SUPAUL',
+       'VAISHALI', 'CHANDIGARH', 'BALOD', 'BALODA BAZAR', 'BALRAMPUR',
+       'BASTAR', 'BEMETARA', 'BIJAPUR', 'BILASPUR', 'DANTEWADA',
+       'DHAMTARI', 'DURG', 'GARIYABAND', 'JANJGIR-CHAMPA', 'JASHPUR',
+       'KABIRDHAM', 'KANKER', 'KONDAGAON', 'KORBA', 'KOREA', 'MAHASAMUND',
+       'MUNGELI', 'NARAYANPUR', 'RAIGARH', 'RAIPUR', 'RAJNANDGAON',
+       'SUKMA', 'SURAJPUR', 'SURGUJA', 'DADRA AND NAGAR HAVELI',
+       'NORTH GOA', 'SOUTH GOA', 'AHMADABAD', 'AMRELI', 'ANAND',
+       'BANAS KANTHA', 'BHARUCH', 'BHAVNAGAR', 'DANG', 'DOHAD',
+       'GANDHINAGAR', 'JAMNAGAR', 'JUNAGADH', 'KACHCHH', 'KHEDA',
+       'MAHESANA', 'NARMADA', 'NAVSARI', 'PANCH MAHALS', 'PATAN',
+       'PORBANDAR', 'RAJKOT', 'SABAR KANTHA', 'SURAT', 'SURENDRANAGAR',
+       'TAPI', 'VADODARA', 'VALSAD', 'AMBALA', 'BHIWANI', 'FARIDABAD',
+       'FATEHABAD', 'GURGAON', 'HISAR', 'JHAJJAR', 'JIND', 'KAITHAL',
+       'KARNAL', 'KURUKSHETRA', 'MAHENDRAGARH', 'MEWAT', 'PALWAL',
+       'PANCHKULA', 'PANIPAT', 'REWARI', 'ROHTAK', 'SIRSA', 'SONIPAT',
+       'YAMUNANAGAR', 'CHAMBA', 'HAMIRPUR', 'KANGRA', 'KINNAUR', 'KULLU',
+       'LAHUL AND SPITI', 'MANDI', 'SHIMLA', 'SIRMAUR', 'SOLAN', 'UNA',
+       'ANANTNAG', 'BADGAM', 'BANDIPORA', 'BARAMULLA', 'DODA',
+       'GANDERBAL', 'JAMMU', 'KARGIL', 'KATHUA', 'KISHTWAR', 'KULGAM',
+       'KUPWARA', 'LEH LADAKH', 'POONCH', 'PULWAMA', 'RAJAURI', 'RAMBAN',
+       'REASI', 'SAMBA', 'SHOPIAN', 'SRINAGAR', 'UDHAMPUR', 'BOKARO',
+       'CHATRA', 'DEOGHAR', 'DHANBAD', 'DUMKA', 'EAST SINGHBUM', 'GARHWA',
+       'GIRIDIH', 'GODDA', 'GUMLA', 'HAZARIBAGH', 'JAMTARA', 'KHUNTI',
+       'KODERMA', 'LATEHAR', 'LOHARDAGA', 'PAKUR', 'PALAMU', 'RAMGARH',
+       'RANCHI', 'SAHEBGANJ', 'SARAIKELA KHARSAWAN', 'SIMDEGA',
+       'WEST SINGHBHUM', 'BAGALKOT', 'BANGALORE RURAL', 'BELGAUM',
+       'BELLARY', 'BENGALURU URBAN', 'BIDAR', 'CHAMARAJANAGAR',
+       'CHIKBALLAPUR', 'CHIKMAGALUR', 'CHITRADURGA', 'DAKSHIN KANNAD',
+       'DAVANGERE', 'DHARWAD', 'GADAG', 'GULBARGA', 'HASSAN', 'HAVERI',
+       'KODAGU', 'KOLAR', 'KOPPAL', 'MANDYA', 'MYSORE', 'RAICHUR',
+       'RAMANAGARA', 'SHIMOGA', 'TUMKUR', 'UDUPI', 'UTTAR KANNAD',
+       'YADGIR', 'ALAPPUZHA', 'ERNAKULAM', 'IDUKKI', 'KANNUR',
+       'KASARAGOD', 'KOLLAM', 'KOTTAYAM', 'KOZHIKODE', 'MALAPPURAM',
+       'PALAKKAD', 'PATHANAMTHITTA', 'THIRUVANANTHAPURAM', 'THRISSUR',
+       'WAYANAD', 'AGAR MALWA', 'ALIRAJPUR', 'ANUPPUR', 'ASHOKNAGAR',
+       'BALAGHAT', 'BARWANI', 'BETUL', 'BHIND', 'BHOPAL', 'BURHANPUR',
+       'CHHATARPUR', 'CHHINDWARA', 'DAMOH', 'DATIA', 'DEWAS', 'DHAR',
+       'DINDORI', 'GUNA', 'GWALIOR', 'HARDA', 'HOSHANGABAD', 'INDORE',
+       'JABALPUR', 'JHABUA', 'KATNI', 'KHANDWA', 'KHARGONE', 'MANDLA',
+       'MANDSAUR', 'MORENA', 'NARSINGHPUR', 'NEEMUCH', 'PANNA', 'RAISEN',
+       'RAJGARH', 'RATLAM', 'REWA', 'SAGAR', 'SATNA', 'SEHORE', 'SEONI',
+       'SHAHDOL', 'SHAJAPUR', 'SHEOPUR', 'SHIVPURI', 'SIDHI', 'SINGRAULI',
+       'TIKAMGARH', 'UJJAIN', 'UMARIA', 'VIDISHA', 'AHMEDNAGAR', 'AKOLA',
+       'AMRAVATI', 'BEED', 'BHANDARA', 'BULDHANA', 'CHANDRAPUR', 'DHULE',
+       'GADCHIROLI', 'GONDIA', 'HINGOLI', 'JALGAON', 'JALNA', 'KOLHAPUR',
+       'LATUR', 'MUMBAI', 'NAGPUR', 'NANDED', 'NANDURBAR', 'NASHIK',
+       'OSMANABAD', 'PALGHAR', 'PARBHANI', 'PUNE', 'RAIGAD', 'RATNAGIRI',
+       'SANGLI', 'SATARA', 'SINDHUDURG', 'SOLAPUR', 'THANE', 'WARDHA',
+       'WASHIM', 'YAVATMAL', 'BISHNUPUR', 'CHANDEL', 'CHURACHANDPUR',
+       'IMPHAL EAST', 'IMPHAL WEST', 'SENAPATI', 'TAMENGLONG', 'THOUBAL',
+       'UKHRUL', 'EAST GARO HILLS', 'EAST JAINTIA HILLS',
+       'EAST KHASI HILLS', 'NORTH GARO HILLS', 'RI BHOI',
+       'SOUTH GARO HILLS', 'SOUTH WEST GARO HILLS',
+       'SOUTH WEST KHASI HILLS', 'WEST GARO HILLS', 'WEST JAINTIA HILLS',
+       'WEST KHASI HILLS', 'AIZAWL', 'CHAMPHAI', 'KOLASIB', 'LAWNGTLAI',
+       'LUNGLEI', 'MAMIT', 'SAIHA', 'SERCHHIP', 'DIMAPUR', 'KIPHIRE',
+       'KOHIMA', 'LONGLENG', 'MOKOKCHUNG', 'MON', 'PEREN', 'PHEK',
+       'TUENSANG', 'WOKHA', 'ZUNHEBOTO', 'ANUGUL', 'BALANGIR',
+       'BALESHWAR', 'BARGARH', 'BHADRAK', 'BOUDH', 'CUTTACK', 'DEOGARH',
+       'DHENKANAL', 'GAJAPATI', 'GANJAM', 'JAGATSINGHAPUR', 'JAJAPUR',
+       'JHARSUGUDA', 'KALAHANDI', 'KANDHAMAL', 'KENDRAPARA', 'KENDUJHAR',
+       'KHORDHA', 'KORAPUT', 'MALKANGIRI', 'MAYURBHANJ', 'NABARANGPUR',
+       'NAYAGARH', 'NUAPADA', 'PURI', 'RAYAGADA', 'SAMBALPUR', 'SONEPUR',
+       'SUNDARGARH', 'KARAIKAL', 'MAHE', 'PONDICHERRY', 'YANAM',
+       'AMRITSAR', 'BARNALA', 'BATHINDA', 'FARIDKOT', 'FATEHGARH SAHIB',
+       'FAZILKA', 'FIROZEPUR', 'GURDASPUR', 'HOSHIARPUR', 'JALANDHAR',
+       'KAPURTHALA', 'LUDHIANA', 'MANSA', 'MOGA', 'MUKTSAR', 'NAWANSHAHR',
+       'PATHANKOT', 'PATIALA', 'RUPNAGAR', 'S.A.S NAGAR', 'SANGRUR',
+       'TARN TARAN', 'AJMER', 'ALWAR', 'BANSWARA', 'BARAN', 'BARMER',
+       'BHARATPUR', 'BHILWARA', 'BIKANER', 'BUNDI', 'CHITTORGARH',
+       'CHURU', 'DAUSA', 'DHOLPUR', 'DUNGARPUR', 'GANGANAGAR',
+       'HANUMANGARH', 'JAIPUR', 'JAISALMER', 'JALORE', 'JHALAWAR',
+       'JHUNJHUNU', 'JODHPUR', 'KARAULI', 'KOTA', 'NAGAUR', 'PALI',
+       'PRATAPGARH', 'RAJSAMAND', 'SAWAI MADHOPUR', 'SIKAR', 'SIROHI',
+       'TONK', 'UDAIPUR', 'EAST DISTRICT', 'NORTH DISTRICT',
+       'SOUTH DISTRICT', 'WEST DISTRICT', 'ARIYALUR', 'COIMBATORE',
+       'CUDDALORE', 'DHARMAPURI', 'DINDIGUL', 'ERODE', 'KANCHIPURAM',
+       'KANNIYAKUMARI', 'KARUR', 'KRISHNAGIRI', 'MADURAI', 'NAGAPATTINAM',
+       'NAMAKKAL', 'PERAMBALUR', 'PUDUKKOTTAI', 'RAMANATHAPURAM', 'SALEM',
+       'SIVAGANGA', 'THANJAVUR', 'THE NILGIRIS', 'THENI', 'THIRUVALLUR',
+       'THIRUVARUR', 'TIRUCHIRAPPALLI', 'TIRUNELVELI', 'TIRUPPUR',
+       'TIRUVANNAMALAI', 'TUTICORIN', 'VELLORE', 'VILLUPURAM',
+       'VIRUDHUNAGAR', 'ADILABAD', 'HYDERABAD', 'KARIMNAGAR', 'KHAMMAM',
+       'MAHBUBNAGAR', 'MEDAK', 'NALGONDA', 'NIZAMABAD', 'RANGAREDDI',
+       'WARANGAL', 'DHALAI', 'GOMATI', 'KHOWAI', 'NORTH TRIPURA',
+       'SEPAHIJALA', 'SOUTH TRIPURA', 'UNAKOTI', 'WEST TRIPURA', 'AGRA',
+       'ALIGARH', 'ALLAHABAD', 'AMBEDKAR NAGAR', 'AMETHI', 'AMROHA',
+       'AURAIYA', 'AZAMGARH', 'BAGHPAT', 'BAHRAICH', 'BALLIA', 'BANDA',
+       'BARABANKI', 'BAREILLY', 'BASTI', 'BIJNOR', 'BUDAUN',
+       'BULANDSHAHR', 'CHANDAULI', 'CHITRAKOOT', 'DEORIA', 'ETAH',
+       'ETAWAH', 'FAIZABAD', 'FARRUKHABAD', 'FATEHPUR', 'FIROZABAD',
+       'GAUTAM BUDDHA NAGAR', 'GHAZIABAD', 'GHAZIPUR', 'GONDA',
+       'GORAKHPUR', 'HAPUR', 'HARDOI', 'HATHRAS', 'JALAUN', 'JAUNPUR',
+       'JHANSI', 'KANNAUJ', 'KANPUR DEHAT', 'KANPUR NAGAR', 'KASGANJ',
+       'KAUSHAMBI', 'KHERI', 'KUSHI NAGAR', 'LALITPUR', 'LUCKNOW',
+       'MAHARAJGANJ', 'MAHOBA', 'MAINPURI', 'MATHURA', 'MAU', 'MEERUT',
+       'MIRZAPUR', 'MORADABAD', 'MUZAFFARNAGAR', 'PILIBHIT', 'RAE BARELI',
+       'RAMPUR', 'SAHARANPUR', 'SAMBHAL', 'SANT KABEER NAGAR',
+       'SANT RAVIDAS NAGAR', 'SHAHJAHANPUR', 'SHAMLI', 'SHRAVASTI',
+       'SIDDHARTH NAGAR', 'SITAPUR', 'SONBHADRA', 'SULTANPUR', 'UNNAO',
+       'VARANASI', 'ALMORA', 'BAGESHWAR', 'CHAMOLI', 'CHAMPAWAT',
+       'DEHRADUN', 'HARIDWAR', 'NAINITAL', 'PAURI GARHWAL', 'PITHORAGARH',
+       'RUDRA PRAYAG', 'TEHRI GARHWAL', 'UDAM SINGH NAGAR', 'UTTAR KASHI',
+       '24 PARAGANAS NORTH', '24 PARAGANAS SOUTH', 'BANKURA', 'BARDHAMAN',
+       'BIRBHUM', 'COOCHBEHAR', 'DARJEELING', 'DINAJPUR DAKSHIN',
+       'DINAJPUR UTTAR', 'HOOGHLY', 'HOWRAH', 'JALPAIGURI', 'MALDAH',
+       'MEDINIPUR EAST', 'MEDINIPUR WEST', 'MURSHIDABAD', 'NADIA',
+       'PURULIA'))
+
+        crop_year = 2021 
+
+        season_select = st.sidebar.selectbox("Select the season", ('Kharif', 'Whole Year', 'Autumn', 'Rabi',
+       'Summer', 'Winter'))
+
+        if season_select == 'Kharif':
+            season_select = 'Kharif     '
+
+        if season_select == 'Whole Year':
+            season_select = 'Whole Year '
+
+        if season_select == 'Autumn':
+            season_select = 'Autumn     '
+
+        if season_select == 'Rabi':
+            season_select = 'Rabi       '
+
+        if season_select == 'Summer':
+            season_select = 'Summer     '
+
+        else :
+            season_select = 'Winter     '
+
+        crop_selection = st.sidebar.selectbox("Select your crop", ('Arecanut', 'Other Kharif pulses', 'Rice', 'Banana', 'Cashewnut',
+       'Coconut ', 'Dry ginger', 'Sugarcane', 'Sweet potato', 'Tapioca',
+       'Black pepper', 'Dry chillies', 'other oilseeds', 'Turmeric',
+       'Maize', 'Moong(Green Gram)', 'Urad', 'Arhar/Tur', 'Groundnut',
+       'Sunflower', 'Bajra', 'Castor seed', 'Cotton(lint)', 'Horse-gram',
+       'Jowar', 'Korra', 'Ragi', 'Tobacco', 'Gram', 'Wheat', 'Masoor',
+       'Sesamum', 'Linseed', 'Safflower', 'Onion', 'other misc. pulses',
+       'Samai', 'Small millets', 'Coriander', 'Potato',
+       'Other  Rabi pulses', 'Soyabean', 'Beans & Mutter(Vegetable)',
+       'Bhindi', 'Brinjal', 'Citrus Fruit', 'Cucumber', 'Grapes', 'Mango',
+       'Orange', 'other fibres', 'Other Fresh Fruits', 'Other Vegetables',
+       'Papaya', 'Pome Fruit', 'Tomato', 'Rapeseed &Mustard', 'Mesta',
+       'Cowpea(Lobia)', 'Lemon', 'Pome Granet', 'Sapota', 'Cabbage',
+       'Peas  (vegetable)', 'Niger seed', 'Bottle Gourd', 'Sannhamp',
+       'Varagu', 'Garlic', 'Ginger', 'Oilseeds total', 'Pulses total',
+       'Jute', 'Peas & beans (Pulses)', 'Blackgram', 'Paddy', 'Pineapple',
+       'Barley', 'Khesari', 'Guar seed', 'Moth',
+       'Other Cereals & Millets', 'Cond-spcs other', 'Turnip', 'Carrot',
+       'Redish', 'Arcanut (Processed)', 'Atcanut (Raw)',
+       'Cashewnut Processed', 'Cashewnut Raw', 'Cardamom', 'Rubber',
+       'Bitter Gourd', 'Drum Stick', 'Jack Fruit', 'Snak Guard',
+       'Pump Kin', 'Tea', 'Coffee', 'Cauliflower', 'Other Citrus Fruit',
+       'Water Melon', 'Total foodgrain', 'Kapas', 'Colocosia', 'Lentil',
+       'Bean', 'Jobster', 'Perilla', 'Rajmash Kholar',
+       'Ricebean (nagadal)', 'Ash Gourd', 'Beet Root', 'Lab-Lab',
+       'Ribed Guard', 'Yam', 'Apple', 'Peach', 'Pear', 'Plums', 'Litchi',
+       'Ber', 'Other Dry Fruit', 'Jute & mesta'))
+
+        area_selection = st.sidebar.text_input("Enter the area of your field (in square meters)")
+
+        rainfall_selection = st.sidebar.text_input("Enter average annual rainfall in your area (in mm)")
+
+
+
+        result=""
+        if st.button("Predict"):
+            result=crop_price_prediction([crop_year, area_selection, rainfall_selection, state_selection, district_selection, season_select, crop_selection])
+
+
+        st.success('The suggested crop price (per quintal) is {}'.format(result))
+
+
+
+
+
+        
+
 
             
 
