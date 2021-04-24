@@ -10,6 +10,6 @@ The actions provided by the webapp are:
 3. Crop Recomendation
 ![alt.text](Crop_REcoomendation.png)
 5. Crop Price Recommendation
-![alt.text](crop_price_pridiction.png)
+![alt.text](crop_price_recommendation.png)
 7. Crop Health 
 ![alt.text](Crop_Health.png)
