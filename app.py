@@ -95,24 +95,6 @@ def img_to_bytes(img_path):
 
 def main():
 
-    components.html("""
-
-    <div id="google_translate_element"></div><script>
-
-    function googleTranslateElementInit() {
-
-    new google.translate.TranslateElement({
-
-    pageLanguage: 'en'
-
-    }, 'google_translate_element');
-
-    }
-
-    </script><script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    
-    """,height=100,)
-
     html_temp = """
     <div>
     <h1 style="color:MEDIUMSEAGREEN;text-align:left;"><font size="10"> AGRI AI 🌱 </font></h1>
