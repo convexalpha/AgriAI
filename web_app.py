@@ -11,8 +11,9 @@ from plotly.subplots import make_subplots
 import cv2
 from PIL import Image, ImageOps
 import numpy as np
-
-
+import base64
+import path
+import json
 
 import tensorflow as tf
 from tensorflow.keras.models import load_model
@@ -42,8 +43,8 @@ def predict_crop_damage(Estimated_Insects_Count,Crop_Type,Soil_Type,Pesticide_Us
     return prediction
 
 def import_and_predict(image_data,model):
-    img=ImageOps.fit(Image.ANTIALIAS,image_data)
-    x = image.img_to_array(img)
+    img=ImageOps.fit(image_data, size=(220,220))
+    x = tf.keras.preprocessing.image.img_to_array(img)
     x = x/255
     result = model.predict([np.expand_dims(x, axis=0)])
     
@@ -57,35 +58,102 @@ def crop_price_prediction(input_list):
     input_array =  np.array(input_list).reshape(-1,5)
     encoded_input = ohe.transform(input_array)
     prediction = model.predict(encoded_input)
+    prediction = float(prediction)
 
     return prediction
 
 def yield_prediction(input_list_yield):
     ohe = {}
-    pickle_file = open("ohe_yield_prediction.pkl","rb")
+    pickle_file = open("oneHotEncoder.pkl","rb")
     ohe = pickle.load(pickle_file)
-    model = load_model('yield_prediction.h5')
-    input_array =  np.array(input_list_yield).reshape(-1, 7)
-    encoded_input = ohe.transform(input_array)
-    prediction = model.predict(encoded_input)
-
+    pickle_file = open("classifier.pkl","rb")
+    model = pickle.load(pickle_file)
+    pickle_file = open("list_mapping.pkl","rb")
+    encodings = pickle.load(pickle_file)
+    input_array = pd.DataFrame(input_list_yield)
+    input_array = input_array.T
+    columns = [0, 1]
+    oneHotEncodedFeature = ohe.transform(input[columns]).toarray()
+    df_encoded = pd.DataFrame(oneHotEncodedFeature)
+    df_final = pd.concat([df_encoded, input.drop(columns, axis=1)],axis=1)
+    X = df_final.values
+    X[0, 680] = encodings[0][X[0, 680]]
+    X[0, 681] = encodings[1][X[0, 681]]
+    prediction = model.predict(model.predict(X.reshape(1,-1)))
+    prediction = float(prediction)
     return prediction
+
+def img_to_bytes(img_path):
+    img_bytes = path.Path(img_path).read_bytes()
+    encoded = base64.b64encode(img_bytes).decode()
+    return encoded
 
 #@st.cache(allow_output_mutation=True)
 
 def main():
 
-  # st.title('AGRI AI')
     html_temp = """
     <div>
-    <h1 style="color:MEDIUMSEAGREEN;text-align:left;"> AGRI AI 🌱 </h1>
+    <h1 style="color:MEDIUMSEAGREEN;text-align:left;"><font size="10"> AGRI AI 🌱 </font></h1>
     </div>
-    
+    <style>
+    .reportview-container .main{
+        background: url("https://i.ibb.co/Sny7Wzm/Mid-shade.png");
+        background-size: cover;
+    }
+   .sidebar .sidebar-content {
+        background: url("https://i.ibb.co/Sny7Wzm/Mid-shade.png")
+    }
+    </style>
+    <style>
+    body {
+    background-image: url("https://i.ibb.co/Sny7Wzm/Mid-shade.png");
+    background-size: cover;
+    }
+    </style>
     """
+    
+    
     st.markdown(html_temp, unsafe_allow_html=True)
 
-    selection = st.radio("Select Use", ['Crop Disease Detection', 'Weed Detection', 'Yield Prediction', 'Crop Price Recommendation', 'Price Recommendation','Crop Health'])
-    st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+
+    # image = Image.open('logo1.jpg')
+    # st.image(image, caption=None, width=200, use_column_width=None, clamp=True, channels='RGB', output_format='auto')
+
+    selection = st.radio("", ['Crop Disease Detection', 'Weed Detection', 'Yield Prediction', 'Crop Price Recommendation', 'Price Recommendation','Crop Health'])
+    st.write("""<style>
+            .reportview-container .markdown-text-container {
+                font-family: monospace;
+            }
+            .sidebar .sidebar-content {
+                background-image: linear-gradient(#FFFFFF,#FFFFFF);
+                color: white;
+            }
+            .Widget>label {
+                color: white;
+                font-family: monospace;
+            }
+            [class^="st-b"]  {
+                color: white;
+                font-family: monospace;
+            }
+            .st-bb {
+                background-color: transparent;
+            }
+            .st-at {
+                
+            }
+            footer {
+                font-family: monospace;
+            }
+            .reportview-container .main footer, .reportview-container .main footer a {
+                color: #FFFFFF;
+            }
+            header .decoration {
+                background-image: none;
+            }
+
+            </style>""", unsafe_allow_html=True)
 
     if selection == 'Crop Health':
         st.sidebar.markdown('<p>Graphs are auto-updated on each change.</p>', unsafe_allow_html=True)
@@ -139,9 +207,35 @@ def main():
     elif selection =='Crop Disease Detection':
    
         #st.set_option('depreciation.showfileUploaderEncoding',False)
+        textbg = """
+        <div style="background-color:{};background: rgba(60, 179, 113, 0.8)">
+        <h1 style="color:{};text-align:center;"><b>Crop Diseases Detection</b></h1>
+        </div>
+        """
+        bgcolor = ''
+        fontcolor = 'white'
+        st.markdown(textbg.format(bgcolor,fontcolor),unsafe_allow_html=True)
+
+        text = """
+        <div style="background-color:{};">
+        <h1 style="color:{};text-align:center;"><font size=4><b> In recent times, drastic climate changes and lack of immunity in crops has caused substantial increase in growth of crop diseases. This causes large scale demolition of crops, decreases cultivation and eventually leads to financial loss of farmers. Due to rapid growth in variety of diseases , identification and treatment of the disease is a major importance.</b></font></h1>
+        </div>
+        """
+        bgcolor = ''
+        fontcolor = 'white'
+        st.markdown(text.format(bgcolor,fontcolor),unsafe_allow_html=True)
+
+        st.markdown(
+        """
+        <style>
+        .sidebar .sidebar-content {
+            background-image: linear-gradient(#3CB371,#3CB391);
+            color: white;
+        }
+        </style>
+        """,
+         unsafe_allow_html=True,)
         
-        st.markdown("""Crop Diseases Detection""")
-        st.markdown(""" In recent times, drastic climate changes and lack of immunity in crops has caused substantial increase in growth of crop diseases. This causes large scale demolition of crops, decreases cultivation and eventually leads to financial loss of farmers. Due to rapid growth in variety of diseases , identification and treatment of the disease is a major importance.""" )
         file=st.sidebar.file_uploader("Please upload a crop image")
         
         #text_io = io.TextIOWrapper(file)
@@ -153,14 +247,16 @@ def main():
                 image=Image.open(file)
                 st.image(image,use_column_width=True)
                 predictions=import_and_predict(image,model5)
-                from IPython.display import FileLink
-                FileLink(r'class_indices.json')
+                file_json = open("class_indices.json", "r")
+                class_indices = json.load(file_json)
                 classes=list(class_indices.keys())
                 classresult=np.argmax(predictions,axis=1)
-                st.success("This crop is {}".format(classes[classresult[0]]))
-                
+                word=classes[classresult[0]].split("__")
+                word[0] = word[0].replace("_"," ")
+                word[1] = word[1].replace("_"," ")
+                st.success("This crop is {} and it has {} ".format(word[0], word[1]))
+
     elif selection == 'Crop Recommendation':
-        st.write("""#Crop Recommendation""")
         st.write("""
             Crop recommendation is one of the most important aspects of precision agriculture. Crop recommendations are based on a number of factors. Precision agriculture seeks to define these criteria on a site-by-site basis in order to address crop selection issues. While the "site-specific" methodology has improved performance, there is still a need to monitor the systems' outcomes.Precision agriculture systems aren't all created equal. 
             However, in agriculture, it is critical that the recommendations made are correct and precise, as errors can result in significant material and capital loss.
