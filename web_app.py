@@ -14,6 +14,9 @@ import numpy as np
 import base64
 import path
 import json
+import streamlit.components.v1 as components
+import joblib
+
 
 import tensorflow as tf
 from tensorflow.keras.models import load_model
@@ -27,7 +30,9 @@ from tensorflow.keras.models import load_model
 # pickle_in3 = open("Agri_pesticide.pkl","rb")
 # model3=pickle.load(pickle_in3)
 
-pickle_in4 = open("crop_recommendation.pkl","rb")
+
+
+pickle_in4 = open("cropRecommender.pkl","rb")
 model4=pickle.load(pickle_in4)
 
 model5 = load_model('plant_disease.hdf5')
@@ -70,16 +75,16 @@ def yield_prediction(input_list_yield):
     model = pickle.load(pickle_file)
     pickle_file = open("list_mapping.pkl","rb")
     encodings = pickle.load(pickle_file)
-    input_array = pd.DataFrame(input_list_yield)
-    input_array = input_array.T
+    input_array_df = pd.DataFrame(input_list_yield)
+    input_array_df = input_array_df.T
     columns = [0, 1]
-    oneHotEncodedFeature = ohe.transform(input[columns]).toarray()
+    oneHotEncodedFeature = ohe.transform(input_array_df[columns]).toarray()
     df_encoded = pd.DataFrame(oneHotEncodedFeature)
-    df_final = pd.concat([df_encoded, input.drop(columns, axis=1)],axis=1)
+    df_final = pd.concat([df_encoded, input_array_df.drop(columns, axis=1)],axis=1)
     X = df_final.values
     X[0, 680] = encodings[0][X[0, 680]]
     X[0, 681] = encodings[1][X[0, 681]]
-    prediction = model.predict(model.predict(X.reshape(1,-1)))
+    prediction = model.predict(X.reshape(1,-1))
     prediction = float(prediction)
     return prediction
 
@@ -91,6 +96,24 @@ def img_to_bytes(img_path):
 #@st.cache(allow_output_mutation=True)
 
 def main():
+
+    components.html("""
+
+    <div id="google_translate_element"></div><script>
+
+    function googleTranslateElementInit() {
+
+    new google.translate.TranslateElement({
+
+    pageLanguage: 'en'
+
+    }, 'google_translate_element');
+
+    }
+
+    </script><script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    """,height=100,)
 
     html_temp = """
     <div>
@@ -120,7 +143,7 @@ def main():
     # image = Image.open('logo1.jpg')
     # st.image(image, caption=None, width=200, use_column_width=None, clamp=True, channels='RGB', output_format='auto')
 
-    selection = st.radio("", ['Crop Disease Detection', 'Weed Detection', 'Yield Prediction', 'Crop Price Recommendation', 'Price Recommendation','Crop Health'])
+    selection = st.radio("", ['Crop Disease Detection', 'Crop Recommendation','Yield Prediction', 'Crop Price Recommendation', 'Crop Health'])
     st.write("""<style>
             .reportview-container .markdown-text-container {
                 font-family: monospace;
@@ -156,10 +179,37 @@ def main():
             </style>""", unsafe_allow_html=True)
 
     if selection == 'Crop Health':
-        st.sidebar.markdown('<p>Graphs are auto-updated on each change.</p>', unsafe_allow_html=True)
+        textbg = """
+        <div style="background-color:{};background: rgba(60, 179, 113, 0.8)">
+        <h1 style="color:{};text-align:center;"><b>Crop Health</b></h1>
+        </div>
+        """
+        bgcolor = ''
+        fontcolor = 'white'
+        st.markdown(textbg.format(bgcolor,fontcolor),unsafe_allow_html=True)
+
+        text = """
+        <div style="background-color:{};">
+        <h1 style="color:{};text-align:center;"><font size=4><b> A good harvest is ensured by several factors such as availability of water, soil fertility, protecting crops from rodents, timely use of pesticides & other useful chemicals and nature. While a lot of these factors are difficult to control for, the amount and frequency of pesticides is something the farmer can control.</b></font></h1>
+        </div>
+        """
+        bgcolor = ''
+        fontcolor = 'white'
+        st.markdown(text.format(bgcolor,fontcolor),unsafe_allow_html=True)
+
+        st.markdown(
+        """
+        <style>
+        .sidebar .sidebar-content {
+            background-image: linear-gradient(#3CB371,#3CB391);
+            color: white;
+        }
+        </style>
+        """,
+         unsafe_allow_html=True,)
         Estimated_Insects_Count = st.sidebar.text_input("Estimated Insects Count per square meter","Type Here")
         Crop_Type = st.sidebar.selectbox("Select your crop type",("Food Crop", "Cash Crop"))
-        Soil_Type = st.sidebar.text_input("Select your soil type",("Dry", "Wet"))
+        Soil_Type = st.sidebar.selectbox("Select your soil type",("Dry", "Wet"))
         Pesticide_Use_Category = st.sidebar.selectbox("Pesticide Use Category",("Never", "Previously Used", "Currently Using"))
         Number_Doses_Week = st.sidebar.text_input("Number Doses per Week","Type Here")
         Number_Weeks_Used = st.sidebar.text_input("Number of Weeks Used","Type Here")
@@ -257,10 +307,35 @@ def main():
                 st.success("This crop is {} and it has {} ".format(word[0], word[1]))
 
     elif selection == 'Crop Recommendation':
-        st.write("""
-            Crop recommendation is one of the most important aspects of precision agriculture. Crop recommendations are based on a number of factors. Precision agriculture seeks to define these criteria on a site-by-site basis in order to address crop selection issues. While the "site-specific" methodology has improved performance, there is still a need to monitor the systems' outcomes.Precision agriculture systems aren't all created equal. 
-            However, in agriculture, it is critical that the recommendations made are correct and precise, as errors can result in significant material and capital loss.
-            """)
+        textbg = """
+        <div style="background-color:{};background: rgba(60, 179, 113, 0.8)">
+        <h1 style="color:{};text-align:center;"><b>Crop Recommendation</b></h1>
+        </div>
+        """
+        bgcolor = ''
+        fontcolor = 'white'
+        st.markdown(textbg.format(bgcolor,fontcolor),unsafe_allow_html=True)
+
+        text = """
+        <div style="background-color:{};">
+        <h1 style="color:{};text-align:center;"><font size=4><b> Crop recommendation is one of the most important aspects of precision agriculture. Crop recommendations are based on a number of factors. Precision agriculture seeks to define these criteria on a site-by-site basis in order to address crop selection issues. While the "site-specific" methodology has improved performance, there is still a need to monitor the systems' outcomes.Precision agriculture systems aren't all created equal. However, in agriculture, it is critical that the recommendations made are correct and precise, as errors can result in significant material and capital loss.</b></font></h1>
+        </div>
+        """
+        bgcolor = ''
+        fontcolor = 'white'
+        st.markdown(text.format(bgcolor,fontcolor),unsafe_allow_html=True)
+
+        st.markdown(
+        """
+        <style>
+        .sidebar .sidebar-content {
+            background-image: linear-gradient(#3CB371,#3CB391);
+            color: white;
+        }
+        </style>
+        """,
+         unsafe_allow_html=True,)
+        
         st.sidebar.markdown(" Find out the most suitable crop to grow in your farm 👨‍🌾")
         N = st.sidebar.number_input("Nitrogen", 1,10000)
         P = st.sidebar.number_input("Phosporus", 1,10000)
@@ -282,6 +357,34 @@ def main():
 
     elif selection == 'Crop Price Recommendation':
         # st.sidebar.markdown('<p>Graphs are auto-updated on each change.</p>', unsafe_allow_html=True)
+        textbg = """
+        <div style="background-color:{};background: rgba(60, 179, 113, 0.8)">
+        <h1 style="color:{};text-align:center;"><b>Crop Price Recommendation</b></h1>
+        </div>
+        """
+        bgcolor = ''
+        fontcolor = 'white'
+        st.markdown(textbg.format(bgcolor,fontcolor),unsafe_allow_html=True)
+
+        text = """
+        <div style="background-color:{};">
+        <h1 style="color:{};text-align:center;"><font size=4><b>Crop price forecasting techniques are essential because they enable supply chain planners and government bodies to take appropriate actions by estimating market factors such as demand and supply. In emerging economies such as India, the crop prices at marketplaces are manually entered every day, prone to human-induced errors like incorrect data or access to no data for many days. In addition to such human errors, the fluctuations in the prices themselves make creating a stable and robust forecasting solution a necessity.</b></font></h1>
+        </div>
+        """
+        bgcolor = ''
+        fontcolor = 'white'
+        st.markdown(text.format(bgcolor,fontcolor),unsafe_allow_html=True)
+
+        st.markdown(
+        """
+        <style>
+        .sidebar .sidebar-content {
+            background-image: linear-gradient(#3CB371,#3CB391);
+            color: white;
+        }
+        </style>
+        """,
+         unsafe_allow_html=True,)
         list1 = []
         state_selection = st.sidebar.selectbox("Select Your State",('Andaman and Nicobar', 'Andhra Pradesh', 'Assam', 'Chattisgarh',
        'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh',
@@ -504,6 +607,35 @@ def main():
 
 
     elif selection == 'Yield Prediction':
+        textbg = """
+        <div style="background-color:{};background: rgba(60, 179, 113, 0.8)">
+        <h1 style="color:{};text-align:center;"><b>Crop Yield Prediction</b></h1>
+        </div>
+        """
+        bgcolor = ''
+        fontcolor = 'white'
+        st.markdown(textbg.format(bgcolor,fontcolor),unsafe_allow_html=True)
+
+        text = """
+        <div style="background-color:{};">
+        <h1 style="color:{};text-align:center;"><font size=4><b>Forecasting or predicting the crop yield well ahead of its harvest time would assist the strategists and farmers for taking suitable measures for selling and storage. In addition to such human errors, the fluctuations in the prices themselves make creating a stable and robust forecasting solution a necessity.</b></font></h1>
+        </div>
+        """
+        bgcolor = ''
+        fontcolor = 'white'
+        st.markdown(text.format(bgcolor,fontcolor),unsafe_allow_html=True)
+
+        st.markdown(
+        """
+        <style>
+        .sidebar .sidebar-content {
+            background-image: linear-gradient(#3CB371,#3CB391);
+            color: white;
+        }
+        </style>
+        """,
+         unsafe_allow_html=True,)
+
         state_selection = st.sidebar.selectbox("Select your state", ('Andaman and Nicobar Islands', 'Andhra Pradesh',
        'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh',
        'Chhattisgarh', 'Dadra and Nagar Haveli', 'Goa', 'Gujarat',
@@ -642,7 +774,7 @@ def main():
        'MEDINIPUR EAST', 'MEDINIPUR WEST', 'MURSHIDABAD', 'NADIA',
        'PURULIA'))
 
-        crop_year = 2021 
+        crop_year = 2014 
 
         season_select = st.sidebar.selectbox("Select the season", ('Kharif', 'Whole Year', 'Autumn', 'Rabi',
        'Summer', 'Winter'))
@@ -695,16 +827,15 @@ def main():
 
         area_selection = st.sidebar.text_input("Enter the area of your field (in square meters)")
 
-        rainfall_selection = st.sidebar.text_input("Enter average annual rainfall in your area (in mm)")
 
 
 
         result=""
         if st.button("Predict"):
-            result=crop_price_prediction([crop_year, area_selection, rainfall_selection, state_selection, district_selection, season_select, crop_selection])
+            result=yield_prediction([state_selection, district_selection, crop_year, season_select, crop_selection, area_selection])
 
 
-        st.success('The suggested crop price (per quintal) is {}'.format(result))
+        st.success('The estimated crop production (Kg per hectare) is {}'.format(result))
 
 
 
