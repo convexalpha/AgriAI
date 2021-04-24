@@ -6,10 +6,10 @@ The actions provided by the webapp are:
 ![alt.text](crop_yield.png)
 3. Crop and disease Detection
 ![alt.text](crop_disease.png)
-crooppp.png
+![alt.text](crooppp.png)
 3. Crop Recomendation
-![alt.text](Crop_Recoomendation.png)
+![alt.text](Crop_REcoomendation.png)
 5. Crop Price Recommendation
-![alt.text](crop price pridiction.png)
+![alt.text](crop_price_pridiction.png)
 7. Crop Health 
 ![alt.text](Crop_Health.png)
