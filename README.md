@@ -1,5 +1,5 @@
 # AgriAI
-An end-to-end web application developed to assist farmers in administering their crop quality, control and foresee selling price. 
+An end-to-end web application developed to assist farmers in administering their crop quality, control and determine the selling price. 
 
 The actions provided by the webapp are:
 1. Crop Yield Prediction:Predicting the net crop yield for a given input recieved from the farmers.
